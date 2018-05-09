@@ -79,18 +79,39 @@ module.exports = function (options) {
             return answers.isBreaking;
           }
         }, {
-          type: 'confirm',
-          name: 'isIssueAffected',
-          message: 'Does this change affect any open issues?',
-          default: false
-        }, {
           type: 'input',
           name: 'issues',
-          message: 'Add issue references (e.g. "fix #123", "re #123".):\n',
-          when: function(answers) {
-            return answers.isIssueAffected;
+          message: 'Jira Issue ID(s) (required):\n',
+          validate: function(input) {
+            if (!input) {
+              return 'Must specify issue IDs, otherwise, just use a normal commit message';
+            } else {
+              return true;
+            }
           }
-        }
+        },
+        {
+          type: 'input',
+          name: 'workflow',
+          message: 'Workflow command (testing, closed, etc.) (optional):\n',
+          validate: function(input) {
+            if (input && input.indexOf(' ') !== -1) {
+              return 'Workflows cannot have spaces in smart commits. If your workflow name has a space, use a dash (-)';
+            } else {
+              return true;
+            }
+          }
+        },
+        {
+          type: 'input',
+          name: 'time',
+          message: 'Time spent (i.e. 3h 15m) (optional):\n'
+        },
+        {
+          type: 'input',
+          name: 'comment',
+          message: 'Jira comment (optional):\n'
+        },
       ]).then(function(answers) {
 
         var maxLineWidth = 100;
@@ -117,9 +138,14 @@ module.exports = function (options) {
         breaking = breaking ? 'BREAKING CHANGE: ' + breaking.replace(/^BREAKING CHANGE: /, '') : '';
         breaking = wrap(breaking, wrapOptions);
 
-        var issues = answers.issues ? wrap(answers.issues, wrapOptions) : '';
+        var workflow = answers.workflow ? '#' + answers.workflow : undefined;
+        var time =  answers.time ? '#time ' + answers.time : undefined;
+        var comment = answers.comment ? '#comment ' + answers.comment : undefined;
 
-        var footer = filter([ breaking, issues ]).join('\n\n');
+
+        var jira = answers.issues ? wrap([answers.issues, workflow, time, comment ].filter(e => !!e).join(' '), wrapOptions) : ''
+
+        var footer = filter([ breaking, jira ]).join('\n\n');
 
         commit(head + '\n\n' + body + '\n\n' + footer);
       });

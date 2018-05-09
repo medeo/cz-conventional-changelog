@@ -1,5 +1,5 @@
 {
-  "name": "cz-conventional-changelog",
+  "name": "@medeo/cz-conventional-changelog",
   "version": "0.0.0-semantically-released.0",
   "description": "Commitizen adapter following the conventional-changelog format.",
   "main": "index.js",
@@ -27,7 +27,7 @@
     "semantic-release": "^6.3.2"
   },
   "config": {
-    "commitizen" : {
+    "commitizen": {
       "path": "./index.js"
     }
   }
